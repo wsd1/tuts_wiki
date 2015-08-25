@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>My ExMem wiki</title>
+	<link rel="shortcut icon" href="/static/img/favicon.png">
+
+	<!-- 新 Bootstrap 核心 CSS 文件 -->
+	<link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+	<!-- 可选的Bootstrap主题文件（一般不用引入） -->
+	<link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+	<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+	<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+
+	<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+	<script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+	<style  type="text/css">
+		.bs-docs-footer {
+			padding-top: 40px;
+			padding-bottom: 40px;
+			margin-top: 100px;
+			color: #767676;
+			text-align: center;
+			border-top: 1px solid #e5e5e5;
+		}
+		.bs-docs-footer-links {
+		    padding-left: 0;
+		    margin-top: 20px;
+		}
+
+		.bs-docs-footer-links li:first-child {
+		    padding-left: 0;
+		}
+		.bs-docs-footer-links li {
+		    display: inline;
+		    padding: 0 2px;
+		}
+	</style>
+
+</head>
+
+<body>
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">ExMem</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <form class="navbar-form navbar-right">
+            <div class="form-group">
+              <input type="text" placeholder="Email" class="form-control">
+            </div>
+            <div class="form-group">
+              <input type="password" placeholder="Password" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success">Sign in</button>
+          </form>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </nav>
+
+
+	<div class="container-fluid">
+
+		<div class="row">
+
+		  <div class="col-xs-12 col-md-2">
+			<div class="input-group">
+		      <input type="text" class="form-control" placeholder="Search for...">
+		      <span class="input-group-btn">
+		        <button class="btn btn-default" type="button">Go!</button>
+		      </span>
+		    </div>
+
+		    <div class="well">...</div>
+		  </div>
+
+		  <div class="col-xs-12 col-md-8">
+
+				<ol class="breadcrumb">
+				  <li><a href="#">Home</a></li>
+				  <li><a href="#">Library</a></li>
+				  <li class="active">Data</li>
+				</ol>
+
+				<div class="page-header">
+					<h1>SerialWeb: 实现浏览器与串口的交互程序</h1>
+					<h6 class="text-muted">壹作舍@2013</h6>
+					<p>
+
+					sweb插件用来提供httpd对串口控制的支持。sweb安装运行后，可以对http服务发布GET或者POST方式访问模块串口。
+					</p><p>
+					前者可以直接在浏览器地址栏里输入，即刻获取回应。而后者需要使用javascript编写相应脚本通过AJAX方式获取数据；前者简单方便，可以应用在wap浏览器上；后者功能灵活强大，利于数据上下交换。
+					</p><p>
+					快速测试
+					</p><p>
+					安装sweb.add插件到模块（如果从云端部署，请确定以sweb名称实施，这将保证程序被安装在“/app/sweb”目录下）；
+					上传cfg.json文件到"/app/sweb"目录；</p><p>
+					运行sweb应用（云端或者本地）；</p><p>
+					可以短接模块串口2收发引脚；
+					</p><p>
+					在浏览器地址栏输入，例如： http://192.168.x.x/logic/sweb/serial?target=hello&wait=1000 回车，一秒钟后，便可以在浏览器窗口看到发出但是被回传的字符串“hello”。
+					该测试演示了通过GET方式与模块进行数据交换。
+					</p><p>
+					更多测试请参考应用的相应页面。</p>
+				</div>
+
+
+		  </div>
+		  <div class="col-xs-12 col-md-2">
+			<div class="well">...</div>
+
+		  </div>
+		</div>
+
+	</div>
+
+
+
+
+
+
+	    <!-- Footer
+	================================================== -->
+	<footer class="bs-docs-footer" role="contentinfo">
+	  <div class="container">
+
+	    <p>Designed and built with all the love in the world by <a href="https://twitter.com/mdo" target="_blank">@mdo</a> and <a href="https://twitter.com/fat" target="_blank">@fat</a>.</p>
+	    <p>Maintained by the <a href="https://github.com/orgs/twbs/people">core team</a> with the help of <a href="https://github.com/twbs/bootstrap/graphs/contributors">our contributors</a>.</p>
+	    <p>本项目源码受 <a rel="license" href="https://github.com/twbs/bootstrap/blob/master/LICENSE" target="_blank">MIT</a>开源协议保护，文档受 <a rel="license" href="https://creativecommons.org/licenses/by/3.0/" target="_blank">CC BY 3.0</a> 开源协议保护。</p>
+	    <ul class="bs-docs-footer-links text-muted">
+	      <li>当前版本： v3.3.5</li>
+	      <li>&middot;</li>
+	      <li><a href="https://github.com/twbs/bootstrap">GitHub 仓库</a></li>
+	      <li>&middot;</li>
+	      <li><a href="../getting-started/#examples">实例精选</a></li>
+	      <li>&middot;</li>
+	      <li><a href="http://v2.bootcss.com/">v2.3.2 中文文档</a></li>
+	      <li>&middot;</li>
+	      <li><a href="../about/">关于</a></li>
+	      <li>&middot;</li>
+	      <li><a href="http://expo.bootcss.com">优站精选</a></li>
+	      <li>&middot;</li>
+	      <li><a href="http://blog.getbootstrap.com">官方博客</a></li>
+	      <li>&middot;</li>
+	      <li><a href="https://github.com/twbs/bootstrap/issues">Issues</a></li>
+	      <li>&middot;</li>
+	      <li><a href="https://github.com/twbs/bootstrap/releases">历史版本</a></li>
+	    </ul>
+	  </div>
+	</footer>
+
+
+
+</body>
+
+</html>
+

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+
+
+
+<html>
+
+<head>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+
+
+	<title>My ExMem wiki</title>
+
+	<link rel="shortcut icon" href="static/img/favicon.ico" type="image/x-icon" />
+
+
+	<!-- 新 Bootstrap 核心 CSS 文件 -->
+
+	<link rel="stylesheet" href="static/css/bootstrap.min.css">
+
+
+
+	<!-- 可选的Bootstrap主题文件（一般不用引入） -->
+
+	<link rel="stylesheet" href="static/css/bootstrap-theme.min.css">
+
+
+
+	<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+
+	<script src="static/js/jquery-1.11.3.min.js"></script>
+
+
+
+	<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+
+	<script src="static/js/bootstrap.min.js"></script>
+
+
+
+	<style type="text/css">
+		.bs-docs-footer {
+			padding-top: 40px;
+			padding-bottom: 40px;
+			margin-top: 100px;
+			color: #767676;
+			text-align: center;
+			border-top: 1px solid #e5e5e5;
+		}
+		.bs-docs-footer-links {
+		    padding-left: 0;
+		    margin-top: 20px;
+		}
+		.bs-docs-footer-links li:first-child {
+		    padding-left: 0;
+		}
+		.bs-docs-footer-links li {
+		    display: inline;
+		    padding: 0 2px;
+		}
+	</style>
+
+
+
+</head>
+
+
+
+<body>
+
+		<nav class="navbar navbar-default">
+
+			<div class="container-fluid">
+
+				<div class="navbar-header">
+
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+
+					<a class="navbar-brand" href="#">{{.Website}}</a>
+				</div>
+
+
+
+				<div id="navbar" class="navbar-collapse collapse">
+
+
+				{{if .IsLogin}}
+					<ul class="nav navbar-nav navbar-right">
+						<li><a href="/logout">Logout</a></li>
+					</ul>
+				{{else}}
+					<form class="navbar-form navbar-right">
+						<div class="form-group">
+							<input type="text" placeholder="Email" class="form-control">
+						</div>
+						<div class="form-group">
+							<input type="password" placeholder="Password" class="form-control">
+						</div>
+						<button type="submit" class="btn btn-success">Sign in</button>
+					</form>
+				{{end}}
+
+				</div><!--/.navbar-collapse -->
+
+			</div>
+
+		</nav>
+
+
+
+	<div class="container-fluid">
+
+		<div class="row">
+
+			<div class="col-xs-12 col-md-2">
+
+				<div class="panel panel-default">
+
+					<div class="panel-heading">
+
+						<div class="input-group">
+							<input type="text" class="form-control" placeholder="Search for...">
+
+							<span class="input-group-btn">
+
+								<button class="btn btn-default" type="button">Go!</button>
+
+							</span>
+						</div>
+
+					</div>
+
+					<div class="panel-body list-group">
+
+						<!-- a href="#" class="list-group-item">Addon</a  -->
+
+					</div>
+
+				</div>
+
+
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>
+						Be involved
+					</div>
+
+					<div class="panel-body list-group">
+						<a href="#" class="list-group-item">Addon</a>
+						<a href="#" class="list-group-item">Hardware</a>
+					</div>
+
+				</div>
+
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<span class="glyphicon glyphicon-log-out" aria-hidden="true"></span>
+
+						Involve</div>
+
+					<div class="panel-body list-group">
+						<a href="#" class="list-group-item">Addon</a>
+						<a href="#" class="list-group-item">Project</a>
+						<a href="#" class="list-group-item">Arm</a>
+						<a href="#" class="list-group-item">Source</a>
+						<a href="#" class="list-group-item">Hardware</a>
+
+					</div>
+				</div>
+			</div>
+
+
+
+			<div class="col-xs-12 col-md-7">
+
+				<ol class="breadcrumb" >
+					<li><a href="#">Root</a></li>
+					<li><a href="#">Addon</a></li>
+					<li class="active">Sweb</li>
+				</ol>
+
+				<div class="page-header">
+					<h1>SerialWeb: 实现浏览器与串口的交互程序</h1>
+					<h6 class="text-muted">壹作舍@2013</h6>
+					<p>
+					sweb插件用来提供httpd对串口控制的支持。sweb安装运行后，可以对http服务发布GET或者POST方式访问模块串口。
+					</p><p>
+					前者可以直接在浏览器地址栏里输入，即刻获取回应。而后者需要使用javascript编写相应脚本通过AJAX方式获取数据；前者简单方便，可以应用在wap浏览器上；后者功能灵活强大，利于数据上下交换。
+					</p><p>
+					快速测试
+					</p><p>
+					安装sweb.add插件到模块（如果从云端部署，请确定以sweb名称实施，这将保证程序被安装在“/app/sweb”目录下）；
+
+					上传cfg.json文件到"/app/sweb"目录；</p><p>
+					运行sweb应用（云端或者本地）；</p><p>
+					可以短接模块串口2收发引脚；
+					</p><p>
+					在浏览器地址栏输入，例如： http://192.168.x.x/logic/sweb/serial?target=hello&wait=1000 回车，一秒钟后，便可以在浏览器窗口看到发出但是被回传的字符串“hello”。
+
+					该测试演示了通过GET方式与模块进行数据交换。
+					</p><p>
+					更多测试请参考应用的相应页面。</p>
+				</div>
+			</div>
+
+			<div class="col-xs-12 col-md-3">
+				<div class="panel panel-default">
+					<!-- Default panel contents -->
+
+					<div class="panel-heading">
+					<span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+						Attributes</div>
+
+					<!-- div class="panel-body"><p></p></div -->
+
+					<table class="table">
+						<caption></caption>
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Attribute</th>
+								<th>Value</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							<tr>
+								<th scope="row">1</th>
+								<td>Mark</td>
+								<td>Otto</td>
+							</tr>
+							<tr>
+								<th scope="row">2</th>
+								<td>Jacob</td>
+								<td>Thornton</td>
+							</tr>
+							<tr>
+								<th scope="row">3</th>
+								<td>Larry</td>
+								<td>the Bird</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+
+
+
+
+
+
+
+
+				</div>
+
+
+
+
+
+
+
+			</div>
+
+		</div>
+
+
+
+	</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+			<!-- Footer
+
+	================================================== -->
+
+	<footer class="bs-docs-footer" role="contentinfo">
+
+		<div class="container">
+
+
+
+			<p>Designed and built with passion by Dingyi</p>
+
+			<ul class="bs-docs-footer-links text-muted">
+
+				<li>当前版本： V{{.Version}}</li>
+
+				<li>&middot;</li>
+
+				<li><a href="https://github.com/wsd1/tuts_wiki">GitHub</a></li>
+
+
+
+			</ul>
+
+		</div>
+
+	</footer>
+
+
+
+
+
+
+
+</body>
+
+
+
+</html>
+
+
+

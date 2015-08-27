@@ -4,6 +4,7 @@
 
 
 This is step by step wiki build tutorial.
+Check tags out.
 
 
 
@@ -47,9 +48,9 @@ So bee is in your path.
 
 ## change log
 
+v0.02: Add cover&login pages/controller and a simple logo.
 
-
-V0.01: Basic index.html template.
+v0.01: Basic index.html template.
 
 ref doc:
 

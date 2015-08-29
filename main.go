@@ -1,11 +1,13 @@
 package main
 
 import (
-	_ "tuts_wiki/routers"
 	"github.com/astaxie/beego"
+	_ "tuts_wiki/routers"
 )
 
 func main() {
+
+	beego.SessionOn = true
+
 	beego.Run()
 }
-

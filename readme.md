@@ -48,6 +48,10 @@ So bee is in your path.
 
 ## change log
 
+v0.03: Add login logic and history logic
+	Use cookie to store email and password (this is suck, I know).
+	Use session feature in beego to implement history(check it out @controllers/home.go).
+
 v0.02: Add cover&login pages/controller and a simple logo.
 
 v0.01: Basic index.html template.

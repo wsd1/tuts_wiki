@@ -43,10 +43,18 @@ So bee is in your path.
  cd into tuts_wiki, and "bee run", open browser with "http://127.0.0.1:8080"
 
 
+## Todo
 
+* Limit model cache num
+
+* limit history length
+
+* Crash if DB file not exist
 
 
 ## change log
+
+v0.04: Word content, relations, attributions views are done. Implement an usable history strategy
 
 v0.03: Add login logic and history logic
 

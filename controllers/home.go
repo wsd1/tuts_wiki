@@ -2,10 +2,55 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
+	//	"log"
+	"tuts_wiki/models"
 )
 
 type HomeController struct {
 	beego.Controller
+}
+
+func isInHistory(str string, strs []string) (bool, int) {
+	for i, v := range strs {
+		if v == str {
+			return true, i
+		}
+	}
+	return false, len(strs)
+}
+
+//input path , current word (be sure in path) and suggest word
+//return new path and practical current word
+func word_path_roam(path []string, current string, word string) ([]string, string) {
+
+	inPath, _ := isInHistory(word, path)
+	//if word in path, just return original path and word as current
+	if inPath {
+		return path, word
+	} else {
+		//if word not in path, check if it is in DB
+		_, inDB := models.WikiM.GetWikiwordByWord(word)
+
+		//if not in DB, skip this word
+		if !inDB {
+			return path, current
+
+		} else {
+
+			//if in DB, trim path, make sure current word is the last one, and append word as last one, make it current word.
+
+			_, idx := isInHistory(current, path)
+
+			new_path := path[:idx+1]
+
+			new_path = append(new_path, word)
+
+			return new_path, word
+
+		}
+
+	}
+
 }
 
 func (c *HomeController) Get() {
@@ -31,29 +76,50 @@ func (c *HomeController) Get() {
 		c.SetSession("WordNow", current)
 	}
 
-	//select word
-	WordSelect := c.Input().Get("select")
-	if WordSelect != "" {
+	new_path := history.([]string)
+	new_current := current.(string)
 
-		if !isIn(WordSelect, history.([]string)) {
-			history = append(history.([]string), WordSelect)
-		}
+	//If word indicated
+	WordIndicate := c.Input().Get("select")
+	if WordIndicate != "" {
 
-		current = WordSelect
-		c.SetSession("WordPath", history)
-		c.SetSession("WordNow", current)
+		new_path, new_current = word_path_roam(new_path, new_current, WordIndicate)
+		c.SetSession("WordPath", new_path)
+		c.SetSession("WordNow", new_current)
 	}
 
-	c.Data["WordPath"] = history
-	c.Data["WordCurrent"] = current
-
-}
-
-func isIn(str string, strs []string) bool {
-	for _, v := range strs {
-		if v == str {
-			return true
-		}
+	var wordContent string
+	wordStruct, inDB := models.WikiM.GetWikiwordByWord(new_current)
+	if inDB {
+		wordContent = string(wordStruct.Content)
+	} else {
+		wordContent = "NULL"
 	}
-	return false
+
+	var wordAttrs []models.Wikiwordattr
+	wordAttrs, inDB = models.WikiM.GetAttrsByWord(new_current)
+	if !inDB {
+		wordAttrs = []models.Wikiwordattr{}
+	}
+
+	var involved []string
+	involved, inDB = models.WikiM.GetInvolvedByWord(new_current)
+	if !inDB {
+		involved = []string{}
+	}
+
+	var beinvolved []string
+	beinvolved, inDB = models.WikiM.GetBeInvolvedByWord(new_current)
+	if !inDB {
+		beinvolved = []string{}
+	}
+
+	c.Data["WordCurrent"] = new_current
+	c.Data["WordPath"] = new_path
+	c.Data["WordContent"] = wordContent
+	c.Data["WordAttrs"] = wordAttrs
+
+	c.Data["BeInvolved"] = beinvolved
+	c.Data["Involved"] = involved
+
 }

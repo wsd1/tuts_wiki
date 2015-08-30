@@ -8,37 +8,17 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
-
-
 	<title>My ExMem wiki</title>
 
 	<link rel="shortcut icon" href="static/img/favicon.ico" type="image/x-icon" />
-
-
 	<!-- 新 Bootstrap 核心 CSS 文件 -->
-
 	<link rel="stylesheet" href="static/css/bootstrap.min.css">
-
-
-
 	<!-- 可选的Bootstrap主题文件（一般不用引入） -->
-
 	<link rel="stylesheet" href="static/css/bootstrap-theme.min.css">
-
-
-
 	<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
-
 	<script src="static/js/jquery-1.11.3.min.js"></script>
-
-
-
 	<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
-
 	<script src="static/js/bootstrap.min.js"></script>
-
-
-
 	<style type="text/css">
 		.bs-docs-footer {
 			padding-top: 40px;
@@ -60,15 +40,9 @@
 		    padding: 0 2px;
 		}
 	</style>
-
-
-
 </head>
 
-
-
 <body>
-
 		<nav class="navbar navbar-default">
 			<div class="container-fluid">
 				<div class="navbar-header">
@@ -134,7 +108,7 @@
 
 					<div class="panel-body list-group">
 						{{range .BeInvolved}}
-						<a href="#" class="list-group-item">{{.}}</a>
+						<a href="/home?select={{.}}" class="list-group-item">{{.}}</a>
 						{{end}}
 					</div>
 
@@ -148,7 +122,7 @@
 
 					<div class="panel-body list-group">
 						{{range .Involved}}
-						<a href="#" class="list-group-item">{{.}}</a>
+						<a href="/home?select={{.}}" class="list-group-item">{{.}}</a>
 						{{end}}
 					</div>
 				</div>
@@ -172,26 +146,9 @@
 				</ol>
 
 				<div class="page-header">
-					<h1>SerialWeb: 实现浏览器与串口的交互程序</h1>
+					<h1>{{.WordCurrent}}</h1>
 					<h6 class="text-muted">壹作舍@2013</h6>
-					<p>
-					sweb插件用来提供httpd对串口控制的支持。sweb安装运行后，可以对http服务发布GET或者POST方式访问模块串口。
-					</p><p>
-					前者可以直接在浏览器地址栏里输入，即刻获取回应。而后者需要使用javascript编写相应脚本通过AJAX方式获取数据；前者简单方便，可以应用在wap浏览器上；后者功能灵活强大，利于数据上下交换。
-					</p><p>
-					快速测试
-					</p><p>
-					安装sweb.add插件到模块（如果从云端部署，请确定以sweb名称实施，这将保证程序被安装在“/app/sweb”目录下）；
-
-					上传cfg.json文件到"/app/sweb"目录；</p><p>
-					运行sweb应用（云端或者本地）；</p><p>
-					可以短接模块串口2收发引脚；
-					</p><p>
-					在浏览器地址栏输入，例如： http://192.168.x.x/logic/sweb/serial?target=hello&wait=1000 回车，一秒钟后，便可以在浏览器窗口看到发出但是被回传的字符串“hello”。
-
-					该测试演示了通过GET方式与模块进行数据交换。
-					</p><p>
-					更多测试请参考应用的相应页面。</p>
+					<pre>{{.WordContent}}</pre>
 				</div>
 			</div>
 
@@ -216,21 +173,14 @@
 						</thead>
 
 						<tbody>
+							{{range .WordAttrs}}
 							<tr>
 								<th scope="row">1</th>
-								<td>Mark</td>
-								<td>Otto</td>
+								<td>{{.Key}}</td>
+								<td>{{.Value}}</td>
 							</tr>
-							<tr>
-								<th scope="row">2</th>
-								<td>Jacob</td>
-								<td>Thornton</td>
-							</tr>
-							<tr>
-								<th scope="row">3</th>
-								<td>Larry</td>
-								<td>the Bird</td>
-							</tr>
+							{{end}}
+
 						</tbody>
 					</table>
 				</div>

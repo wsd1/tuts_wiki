@@ -54,6 +54,12 @@ So bee is in your path.
 
 ## change log
 
+v0.05: RESTful API support, implement content modification. 
+
+* New router "/words/xxxx" to get wikiWord content; 
+
+* Implement content modification via PUT method.
+
 v0.04: Word content, relations, attributions views are done. Implement an usable history strategy
 
 v0.03: Add login logic and history logic

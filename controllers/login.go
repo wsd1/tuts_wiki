@@ -21,8 +21,8 @@ func (c *LoginController) Get() {
 	isExit := c.Input().Get("exit") == "true"
 
 	if isExit {
-		c.Ctx.SetCookie("usremail", "", -1, "/home")
-		c.Ctx.SetCookie("usrpwd", "", -1, "/home")
+		c.Ctx.SetCookie("usremail", "", -1, "/words")
+		c.Ctx.SetCookie("usrpwd", "", -1, "/words")
 		c.Redirect("/", 302)
 	}
 
@@ -56,11 +56,11 @@ func (c *LoginController) Post() {
 			maxAge = 3600
 		}
 
-		c.Ctx.SetCookie("usremail", email, maxAge, "/home")
-		c.Ctx.SetCookie("usrpwd", pwd, maxAge, "/home")
+		c.Ctx.SetCookie("usremail", email, maxAge, "/words")
+		c.Ctx.SetCookie("usrpwd", pwd, maxAge, "/words")
 	}
 
-	c.Redirect("/home", 302)
+	c.Redirect("/words", 302)
 
 }
 

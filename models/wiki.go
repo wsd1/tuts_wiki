@@ -10,7 +10,7 @@ import (
 
 type Wikiwordstruct struct {
 	Word        string
-	Content     []byte
+	Content     string
 	Compression bool
 	Encryption  bool
 
@@ -49,14 +49,48 @@ func NewWikiModel() *WikiwordModel {
 	return wikiM
 }
 
+func (this *WikiwordModel) SaveWikiword(word *Wikiwordstruct) *Wikiwordstruct {
+
+	if nil == word {
+		return nil
+	}
+	//cache delete
+	delete(this.wordsCache, word.Word)
+
+	//	log.Println("SQL_UPDATE:", word.Word)
+	sql := "UPDATE wikiwordcontent SET content = ?,compression = ?,encryption = ?,created = ? ,modified = ? ,visited = ? ,readonly = ? WHERE word = ?"
+	res, err := SqlDb.Exec(sql, word.Content, word.Compression, word.Encryption, word.Created, word.Modified, word.Visited, word.Readonly, word.Word)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	_, err_lastInsertId := res.LastInsertId()
+	if err_lastInsertId != nil {
+		log.Println(err_lastInsertId)
+	}
+	rowCnt, err_affected := res.RowsAffected()
+	if err_affected != nil {
+		log.Println(err_affected)
+	}
+
+	//fmt.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
+
+	if rowCnt > 0 {
+		return this.GetWikiwordByWord(word.Word)
+	}
+
+	return nil
+}
+
 // get word struct by word.
 // if no cached, query from db and cache it.
-func (this *WikiwordModel) GetWikiwordByWord(w string) (*Wikiwordstruct, bool) {
+func (this *WikiwordModel) GetWikiwordByWord(w string) *Wikiwordstruct {
 
 	//cache check
 	c, ok := this.wordsCache[w]
 	if ok {
-		return c, true
+		return c
 	}
 
 	//sql retrive
@@ -67,32 +101,31 @@ func (this *WikiwordModel) GetWikiwordByWord(w string) (*Wikiwordstruct, bool) {
 	if err != nil {
 		log.Println("Get err when query: " + w)
 		log.Println(err)
-		return nil, false
+		return nil
 	}
-
+	log.Println("SQL_GET:", word)
 	// cache and return it
 	if word.Word == w {
 		this.wordsCache[w] = word
-		return word, true
+		return word
 	}
 
-	return nil, false
-
+	return nil
 }
 
-func (this *WikiwordModel) GetAttrsByWord(w string) ([]Wikiwordattr, bool) {
+func (this *WikiwordModel) GetAttrsByWord(w string) []Wikiwordattr {
 
 	//cache check
 	c, ok := this.attrsCache[w]
 	if ok {
-		return c, true
+		return c
 	}
 
 	// Execute the query
 	rows, err := SqlDb.Query("SELECT key, value FROM wikiwordattrs WHERE word = ?", w)
 	if err != nil {
 		log.Println(err)
-		return nil, false
+		return nil
 	}
 	defer rows.Close()
 
@@ -103,7 +136,7 @@ func (this *WikiwordModel) GetAttrsByWord(w string) ([]Wikiwordattr, bool) {
 		err = rows.Scan(&attr.Key, &attr.Value)
 		if err != nil {
 			log.Println(err)
-			return nil, false
+			return nil
 		}
 		attrs = append(attrs, attr)
 	}
@@ -111,32 +144,32 @@ func (this *WikiwordModel) GetAttrsByWord(w string) ([]Wikiwordattr, bool) {
 	err = rows.Err()
 	if err != nil {
 		log.Println(err)
-		return nil, false
+		return nil
 	}
 
 	// cache and return it
 	if len(attrs) > 0 {
 		this.attrsCache[w] = attrs
-		return attrs, true
+		return attrs
 	}
 
-	return nil, false
+	return nil
 
 }
 
-func (this *WikiwordModel) GetBeInvolvedByWord(w string) ([]string, bool) {
+func (this *WikiwordModel) GetBeInvolvedByWord(w string) []string {
 
 	//cache check
 	c, ok := this.beinvCache[w]
 	if ok {
-		return c, true
+		return c
 	}
 
 	// Execute the query
 	rows, err := SqlDb.Query("SELECT word FROM wikirelations WHERE relation = ?", w)
 	if err != nil {
 		log.Println(err)
-		return nil, false
+		return nil
 	}
 	defer rows.Close()
 
@@ -147,7 +180,7 @@ func (this *WikiwordModel) GetBeInvolvedByWord(w string) ([]string, bool) {
 		err = rows.Scan(&str)
 		if err != nil {
 			log.Println(err)
-			return nil, false
+			return nil
 		}
 		beinvolves = append(beinvolves, str)
 	}
@@ -155,32 +188,32 @@ func (this *WikiwordModel) GetBeInvolvedByWord(w string) ([]string, bool) {
 	err = rows.Err()
 	if err != nil {
 		log.Println(err)
-		return nil, false
+		return nil
 	}
 
 	// cache and return it
 	if len(beinvolves) > 0 {
 		this.beinvCache[w] = beinvolves
-		return beinvolves, true
+		return beinvolves
 	}
 
-	return nil, false
+	return nil
 
 }
 
-func (this *WikiwordModel) GetInvolvedByWord(w string) ([]string, bool) {
+func (this *WikiwordModel) GetInvolvedByWord(w string) []string {
 
 	//cache check
 	c, ok := this.involCache[w]
 	if ok {
-		return c, true
+		return c
 	}
 
 	// Execute the query
 	rows, err := SqlDb.Query("SELECT relation FROM wikirelations WHERE word = ?", w)
 	if err != nil {
 		log.Println(err)
-		return nil, false
+		return nil
 	}
 	defer rows.Close()
 
@@ -191,7 +224,7 @@ func (this *WikiwordModel) GetInvolvedByWord(w string) ([]string, bool) {
 		err = rows.Scan(&str)
 		if err != nil {
 			log.Println(err)
-			return nil, false
+			return nil
 		}
 		involves = append(involves, str)
 	}
@@ -199,15 +232,15 @@ func (this *WikiwordModel) GetInvolvedByWord(w string) ([]string, bool) {
 	err = rows.Err()
 	if err != nil {
 		log.Println(err)
-		return nil, false
+		return nil
 	}
 
 	// cache and return it
 	if len(involves) > 0 {
 		this.involCache[w] = involves
-		return involves, true
+		return involves
 	}
 
-	return nil, false
+	return nil
 
 }

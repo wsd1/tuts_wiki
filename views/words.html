@@ -100,7 +100,7 @@
 					</div>
 
 
-					<div class="panel panel-default">
+					<!--div class="panel panel-default">
 						<div class="panel-heading">
 							<span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>
 							Be involved
@@ -112,20 +112,10 @@
 							{{end}}
 						</div>
 
-					</div>
+					</div-->
 
-					<div class="panel panel-default">
-						<div class="panel-heading">
-							<span class="glyphicon glyphicon-log-out" aria-hidden="true"></span>
 
-							Involve</div>
 
-						<div class="panel-body list-group">
-							{{range .Involved}}
-							<a href="/words/{{.}}" class="list-group-item">{{.}}</a>
-							{{end}}
-						</div>
-					</div>
 				</div>
 				<div class="col-xs-12 col-md-7">
 
@@ -142,12 +132,16 @@
 						{{end}}
 					</ol>
 
- <!--div class="row">
- 	<div class="col-lg-9"></div>
- 	<div class="col-lg-3"></div>
- </div-->
 
 
+
+								 <!--div class="row">
+								 	<div class="col-lg-9">
+								 	</div>
+								 	<div class="col-lg-3">
+								 	</div>
+								 </div-->
+								
 					<!--ul class="nav nav-pills navbar-right" role="tablist" id="tab-list" style="margin-top: -4px;">
 						<li class="active"><a href="#view" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>view</a></li>
 						<li><a href="#source" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span>source</a></li>
@@ -159,7 +153,11 @@
 
 
 							<div class="page-header">
+
+									
+
 								<h1>{{.WordCurrent}}</h1>
+
 
 								<span class="label label-info">Create:{{utc2str .WordCreate}}</span>
 								<span class="label label-info">Modify:{{utc2str .WordModify}}</span>
@@ -168,9 +166,37 @@
 								<div style="margin-top:20px">
 									<textarea id='content_editor' >{{.WordContent}}</textarea>
 								</div>
+
+
+
+<div class="panel panel-default" style="margin-top:20px">
+	<div class="panel-body">
+
+
+									<p> <span class="glyphicon glyphicon-log-in" aria-hidden="true">
+							{{range .BeInvolved}}
+							<a style="line-height:1.5em" href="/words/{{.}}">[{{.}}]</a>
+							{{end}}
+									</p>
+									
+
+									<p> <span class="glyphicon glyphicon-tags" aria-hidden="true">
+							{{range .Involved}}
+							<a style="line-height:1.5em" href="/words/{{.}}">[{{.}}]</a>
+							{{end}}
+									</p>
+
+	</div>
+</div>
+
+
+
+
+								<button id="changed_sign" type="button" class="btn btn-primary pull-right" style="margin:20px">  <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
+
+
+
 							</div>
-
-
 
 
 				</div>
@@ -232,10 +258,24 @@
 
 	<script src="/static/js/codemirror.js"></script>
 
+	<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+	<script src="/static/js/jquery-1.11.3.min.js"></script>
+	<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+	<script src="/static/js/bootstrap.min.js"></script>
+
 
 	<script type="text/javascript">
-//		$(document).ready(function(){});
+
 		var GLB_word_current = {{.WordCurrent}}
+
+
+		$(document).ready(function(){
+
+			$("#changed_sign").hide();
+			$('#changed_sign').on('click', save_to_svr);
+
+		});
+
 
 		var glb_editor = CodeMirror.fromTextArea(
 			document.getElementById("content_editor"), 
@@ -248,49 +288,62 @@
 	//			mode: "text/x-markdown",
 				extraKeys:{
 					"Ctrl-R": function() {},
-					"Ctrl-S": function() {
-						var myDate = new Date();
-
-						var wiki_word = {
-							Word: GLB_word_current,
-							Content: glb_editor.getValue(),
-							Compression: false,
-							Encryption: false,
-							Created: 0,
-							Modified: 0,
-							Visited: 0,
-							Readonly: false
-						};
-
-
-						$.ajax({ 
-							type: "PUT", 
-							url: "/words/" + GLB_word_current, 
-							data: JSON.stringify(wiki_word), 
-							contentType: "application/json; charset=utf-8", 
-							dataType: "json", 
-							success: function (data) {console.log( data ); }, 
-							error: function (msg) { console.log( msg );} 
-						});
-/*
-						$.ajax( "words/", 'PUT', JSON.stringify(wiki_word),
-							function( data ) {
-								console.log( data );
-							}, "json");
-*/
-
-
-					}
+					"Ctrl-S": save_to_svr
 				}
 			}
 		);
+
+		var glb_original_content = glb_editor.getValue()
+		function is_content_change(){
+			return glb_original_content != glb_editor.getValue()
+		}
+
+
+		glb_editor.on('change', 
+			function(){
+				if(is_content_change())$("#changed_sign").show();
+				else $("#changed_sign").hide();
+			});
+		
+		glb_editor.on('dblclick', function() {
+			alert('You double click the editor');
+		});
+
+		function save_to_svr() {
+			if(!is_content_change())
+				return;
+
+
+			var wiki_word = {
+				Word: GLB_word_current,
+				Content: glb_editor.getValue(),
+				Compression: false,
+				Encryption: false,
+				Created: 0,
+				Modified: 0,
+				Visited: 0,
+				Readonly: false
+			};
+
+			glb_original_content = wiki_word.Content
+
+			$.ajax({ 
+				type: "PUT", 
+				url: "/words/" + GLB_word_current, 
+				data: JSON.stringify(wiki_word), 
+				contentType: "application/json; charset=utf-8", 
+				dataType: "json", 
+				success: function (data) {
+					$("#changed_sign").hide();
+				}, 
+				error: function (msg) { console.log( msg );} 
+			});
+		}
+
+
 	</script>
 
 
-	<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
-	<script src="/static/js/jquery-1.11.3.min.js"></script>
-	<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
-	<script src="/static/js/bootstrap.min.js"></script>
 
 </html>
 

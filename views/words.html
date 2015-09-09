@@ -16,8 +16,9 @@
 	<!-- 可选的Bootstrap主题文件（一般不用引入） -->
 	<link rel="stylesheet" href="/static/css/bootstrap-theme.min.css">
 
-	<link rel="stylesheet" href="/static/css/codemirror.css">
 
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
 
 	<style type="text/css">
 		.bs-docs-footer {
@@ -29,15 +30,15 @@
 			border-top: 1px solid #e5e5e5;
 		}
 		.bs-docs-footer-links {
-		    padding-left: 0;
-		    margin-top: 20px;
+			padding-left: 0;
+			margin-top: 20px;
 		}
 		.bs-docs-footer-links li:first-child {
-		    padding-left: 0;
+			padding-left: 0;
 		}
 		.bs-docs-footer-links li {
-		    display: inline;
-		    padding: 0 2px;
+			display: inline;
+			padding: 0 2px;
 		}
 	</style>
 </head>
@@ -156,7 +157,7 @@
 
 									
 
-								<h1>{{.WordCurrent}}</h1>
+								<h1>{{.WordCurrent}}<span id="changed_sign">*</span></h1>
 
 
 								<span class="label label-info">Create:{{utc2str .WordCreate}}</span>
@@ -191,8 +192,6 @@
 
 
 
-
-								<button id="changed_sign" type="button" class="btn btn-primary pull-right" style="margin:20px">  <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
 
 
 
@@ -256,8 +255,7 @@
 
 </body>
 
-	<script src="/static/js/codemirror.js"></script>
-
+	<script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 	<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
 	<script src="/static/js/jquery-1.11.3.min.js"></script>
 	<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
@@ -266,17 +264,45 @@
 
 	<script type="text/javascript">
 
+
 		var GLB_word_current = {{.WordCurrent}}
 
-
 		$(document).ready(function(){
-
 			$("#changed_sign").hide();
-			$('#changed_sign').on('click', save_to_svr);
+		});
+
+
+		var glb_editor = new SimpleMDE({
+			element:document.getElementById("content_editor"),
+			indentWithTabs: true,
+			tabSize: 4,
+			autofocus: true,
+			autosave: {
+				enabled: true,
+				unique_id: "content_editor",
+				delay: 10000,
+			},
+			spellChecker: false,
+
+			toolbar: [	"bold", "italic", "heading", "|", 
+						"quote", "unordered-list", "ordered-list", "|", 
+						"link", "image", "|", 
+						"preview", "side-by-side", "fullscreen", "guide",
+						{
+							name: "save",
+							action: saveContent,
+							className: "fa fa-save",
+							title: "Save (Ctrl+S)",
+						}
+					]
 
 		});
 
 
+
+		glb_editor.render();
+
+/*
 		var glb_editor = CodeMirror.fromTextArea(
 			document.getElementById("content_editor"), 
 			{
@@ -293,30 +319,31 @@
 			}
 		);
 
-		var glb_original_content = glb_editor.getValue()
-		function is_content_change(){
-			return glb_original_content != glb_editor.getValue()
+
+
+
+*/
+		var glb_original_content = glb_editor.value();
+
+		function is_content_change(editor){
+			return glb_original_content != editor.value()
 		}
 
-
-		glb_editor.on('change', 
+		glb_editor.codemirror.on('change', 
 			function(){
-				if(is_content_change())$("#changed_sign").show();
-				else $("#changed_sign").hide();
+				if(is_content_change(glb_editor))
+					$("#changed_sign").show();
+				else 
+					$("#changed_sign").hide();
 			});
-		
-		glb_editor.on('dblclick', function() {
-			alert('You double click the editor');
-		});
 
-		function save_to_svr() {
-			if(!is_content_change())
+		function saveContent(editor) {
+			if(!is_content_change(editor))
 				return;
-
 
 			var wiki_word = {
 				Word: GLB_word_current,
-				Content: glb_editor.getValue(),
+				Content: editor.value(),
 				Compression: false,
 				Encryption: false,
 				Created: 0,
@@ -339,6 +366,7 @@
 				error: function (msg) { console.log( msg );} 
 			});
 		}
+
 
 
 	</script>

@@ -54,6 +54,8 @@ So bee is in your path.
 
 ## change log
 
+v0.07: Choose a pretty editor.
+
 v0.06: Add modification indication
 
 v0.05: RESTful API support, implement content modification. 

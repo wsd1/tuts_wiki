@@ -49,6 +49,40 @@ func NewWikiModel() *WikiwordModel {
 	return wikiM
 }
 
+func (this *WikiwordModel) NewWikiword(word *Wikiwordstruct) *Wikiwordstruct {
+
+	if nil == word {
+		return nil
+	}
+	//cache delete
+	delete(this.wordsCache, word.Word)
+
+	sql := "INSERT INTO wikiwordcontent(word,content,compression,encryption,created,modified,visited,readonly) "
+	sql += "VALUES (?,?,?,?,?,?,?,?)"
+	res, err := SqlDb.Exec(sql, word.Word, word.Content, word.Compression, word.Encryption, word.Created, word.Modified, word.Visited, word.Readonly)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	_, err_lastInsertId := res.LastInsertId()
+	if err_lastInsertId != nil {
+		log.Println(err_lastInsertId)
+	}
+	rowCnt, err_affected := res.RowsAffected()
+	if err_affected != nil {
+		log.Println(err_affected)
+	}
+
+	//fmt.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
+
+	if rowCnt > 0 {
+		return this.GetWikiwordByWord(word.Word)
+	}
+
+	return nil
+}
+
 func (this *WikiwordModel) SaveWikiword(word *Wikiwordstruct) *Wikiwordstruct {
 
 	if nil == word {
@@ -103,7 +137,7 @@ func (this *WikiwordModel) GetWikiwordByWord(w string) *Wikiwordstruct {
 		log.Println(err)
 		return nil
 	}
-	log.Println("SQL_GET:", word)
+	//log.Println("SQL_GET:", word)
 	// cache and return it
 	if word.Word == w {
 		this.wordsCache[w] = word

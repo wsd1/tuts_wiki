@@ -89,6 +89,8 @@ func (c *WordsController) Get() {
 
 	// Word visit history.
 	wordPath, wordCurrent := session_word_path(c, WordIndicate)
+	//wordCurrent := WordIndicate
+	//wordPath := []string{}
 
 	wordStruct = models.WikiM.GetWikiwordByWord(wordCurrent)
 	if nil == wordStruct {

@@ -171,18 +171,11 @@
 					</div>
 
 				</div>
-				
+
 				<div class="col-xs-12 col-md-2">
-					<div class="panel panel-default">
-						<!-- Default panel contents -->
 
-						<div class="panel-heading">
-						<span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
-							Attributes</div>
 
-						<!-- div class="panel-body"><p></p></div -->
-
-						<table class="table">
+						<!--table class="table">
 							<caption></caption>
 							<thead>
 								<tr>
@@ -202,8 +195,8 @@
 								{{end}}
 
 							</tbody>
-						</table>
-					</div>
+						</table-->
+
 				</div>
 			</div>
 		</div>
@@ -237,8 +230,8 @@
 
 	<script type="text/javascript">
 
-
-		var GLB_word_current = {{.WordCurrent}}
+		var tpl_is_new = {{.isNew}}
+		var tpl_word_current = {{.WordCurrent}}
 
 		$(document).ready(function(){
 		});
@@ -260,6 +253,7 @@
 						"quote", "unordered-list", "ordered-list", "|", 
 						"link", "image", "|", 
 						"preview", "side-by-side", "fullscreen", "guide",
+						"|",
 						{
 							name: "save",
 							action: saveContent,
@@ -269,7 +263,7 @@
 						{
 							name: "relation",
 							action: createRelation,
-							className: "fa fa-paperclip",
+							className: "fa fa-share-alt-square",
 							title: "Relation",
 						}
 					]
@@ -296,8 +290,6 @@
 				}
 			}
 		);
-
-
 
 
 */
@@ -341,7 +333,7 @@
 				return;
 
 			var wiki_word = {
-				Word: GLB_word_current,
+				Word: tpl_word_current,
 				Content: editor.value(),
 				Compression: false,
 				Encryption: false,
@@ -353,9 +345,18 @@
 
 			glb_original_content = wiki_word.Content
 
+			var submit_method, submit_target;
+
+			if(tpl_is_new){
+				submit_method = "POST"
+				submit_target = "/words"
+			}else{
+				submit_method = "PUT"
+				submit_target = "/words/" + wiki_word.Word
+			}
 			$.ajax({ 
-				type: "PUT", 
-				url: "/words/" + GLB_word_current, 
+				type: submit_method, 
+				url: submit_target, 
 				data: JSON.stringify(wiki_word), 
 				contentType: "application/json; charset=utf-8", 
 				dataType: "json", 
@@ -366,7 +367,9 @@
 			});
 		}
 
-
+		if(!tpl_is_new){
+			glb_editor.togglePreview()
+		}		
 
 	</script>
 

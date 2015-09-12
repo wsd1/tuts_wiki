@@ -53,6 +53,8 @@ So bee is in your path.
 
 
 ## change log
+v0.09: Optimize word history logic;
+
 v0.08: Add link wiki word function.
 
 v0.07: Choose a pretty editor.

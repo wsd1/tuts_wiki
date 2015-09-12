@@ -29,13 +29,13 @@ func (c *WordsController) Post() {
 	inheritTimeStamp(&w, nil)
 	//	log.Println("Timestamp:", w)
 
-	if nil != models.WikiM.SaveWikiword(&w) {
+	if nil != models.WikiM.NewWikiword(&w) {
 		c.Data["json"] = "{\"Word\":\"" + w.Word + "\"}"
+		c.ServeJson()
 	} else {
-		c.Data["json"] = "{\"Word\":\"\"}"
+		c.Abort("500")
 	}
 
-	c.ServeJson()
 }
 
 //PUT /words/xxxx：更新某个指定信息（提供该全部信息）
@@ -66,11 +66,11 @@ func (c *WordsController) Put() {
 
 	if nil != models.WikiM.SaveWikiword(&w) {
 		c.Data["json"] = "{\"Word\":\"" + w.Word + "\"}"
+		c.ServeJson()
 	} else {
-		c.Data["json"] = "{\"Word\":\"\"}"
+		c.Abort("500")
 	}
 
-	c.ServeJson()
 }
 
 func (c *WordsController) Get() {
@@ -78,6 +78,7 @@ func (c *WordsController) Get() {
 	var wordAttrs []models.Wikiwordattr
 	var involved []string
 	var beInvolved []string
+	var isNew bool
 
 	// router: /words/?:word
 	WordIndicate := c.Ctx.Input.Param(":word")
@@ -87,27 +88,48 @@ func (c *WordsController) Get() {
 		c.Redirect("/", 302)
 	}
 
-	// Word visit history.
-	wordPath, wordCurrent := session_word_path(c, WordIndicate)
-	//wordCurrent := WordIndicate
-	//wordPath := []string{}
+	// /words will redirect to /words/xxx
+	if "" == WordIndicate {
+		start := beego.AppConfig.String("StartPoint")
+		c.Redirect("/words/"+start, 302)
+	}
 
-	wordStruct = models.WikiM.GetWikiwordByWord(wordCurrent)
+	wordStruct = models.WikiM.GetWikiwordByWord(WordIndicate)
 	if nil == wordStruct {
 		wordStruct = new(models.Wikiwordstruct)
 	}
 
-	wordAttrs = models.WikiM.GetAttrsByWord(wordCurrent)
+	// Word visit history.
+	//wordPath, wordCurrent := session_word_path(c, WordIndicate)
+	//wordCurrent := WordIndicate
+	//wordPath := []string{}
+
+	wordStruct = models.WikiM.GetWikiwordByWord(WordIndicate)
+	if nil == wordStruct {
+		wordStruct = &models.Wikiwordstruct{
+			Word:        WordIndicate,
+			Content:     "",
+			Compression: false,
+			Encryption:  false,
+			Created:     0.0,
+			Modified:    0.0,
+			Visited:     0.0,
+			Readonly:    false,
+		}
+		isNew = true
+	}
+
+	wordAttrs = models.WikiM.GetAttrsByWord(WordIndicate)
 	if nil == wordAttrs {
 		wordAttrs = []models.Wikiwordattr{}
 	}
 
-	involved = models.WikiM.GetInvolvedByWord(wordCurrent)
+	involved = models.WikiM.GetInvolvedByWord(WordIndicate)
 	if nil == involved {
 		involved = []string{}
 	}
 
-	beInvolved = models.WikiM.GetBeInvolvedByWord(wordCurrent)
+	beInvolved = models.WikiM.GetBeInvolvedByWord(WordIndicate)
 	if nil == beInvolved {
 		beInvolved = []string{}
 	}
@@ -118,9 +140,11 @@ func (c *WordsController) Get() {
 	c.Data["Email"] = "yizuoshe@gmail.com"
 	c.Data["Version"] = "0.1"
 
-	c.Data["WordCurrent"] = wordCurrent
-	c.Data["WordPath"] = wordPath
+	c.Data["isNew"] = isNew
 
+	c.Data["WordPath"] = session_word_path(c, WordIndicate)
+
+	c.Data["WordCurrent"] = wordStruct.Word
 	c.Data["WordContent"] = wordStruct.Content
 	c.Data["WordCreate"] = wordStruct.Created
 	c.Data["WordModify"] = wordStruct.Modified
@@ -132,7 +156,7 @@ func (c *WordsController) Get() {
 
 }
 
-func isInHistory(str string, strs []string) (bool, int) {
+func isInHistory(strs []string, str string) (bool, int) {
 	for i, v := range strs {
 		if v == str {
 			return true, i
@@ -141,66 +165,49 @@ func isInHistory(str string, strs []string) (bool, int) {
 	return false, len(strs)
 }
 
-//input path , current word (be sure in path) and suggest word
-//return new path and practical current word
-func word_path_roam(path []string, current string, word string) ([]string, string) {
-
-	inPath, _ := isInHistory(word, path)
-	//if word in path, just return original path and word as current
-	if inPath {
-		return path, word
-	} else {
-		//if word not in path, check if it is in DB
-		w := models.WikiM.GetWikiwordByWord(word)
-
-		//if not in DB, skip this word
-		if nil == w {
-			return path, current
-
-		} else {
-
-			//if in DB, trim path, make sure current word is the last one, and append word as last one, make it current word.
-
-			_, idx := isInHistory(current, path)
-
-			new_path := path[:idx+1]
-
-			new_path = append(new_path, word)
-
-			return new_path, word
-		}
-	}
-}
-
 // Input suggest word, return paht and current.
 // This func will update session storage also.
-func session_word_path(c *WordsController, new_word string) ([]string, string) {
+func session_word_path(c *WordsController, new_word string) []string {
 
-	// view context, init if not defined
-	history := c.GetSession("WordPath")
-	if history == nil {
-		default_start := beego.AppConfig.String("StartPoint")
-		history = []string{default_start}
+	var history []string
+	var index int
+
+	if new_word == "" {
+		return nil
+	}
+
+	// Init if not defined
+	if nil == c.GetSession("WordPath") {
+		history = []string{new_word}
 		c.SetSession("WordPath", history)
+	} else {
+		history = c.GetSession("WordPath").([]string)
 	}
 
-	current := c.GetSession("WordNow")
-	if current == nil {
-		current = history.([]string)[0]
-		c.SetSession("WordNow", current)
+	if nil == c.GetSession("WordPathIdx") {
+		index = 0
+		c.SetSession("WordPathIdx", index)
+	} else {
+		index = c.GetSession("WordPathIdx").(int)
 	}
 
-	new_path := history.([]string)
-	new_current := current.(string)
+	ok, idx := isInHistory(history, new_word)
 
-	//If word indicated
-	if new_word != "" {
-		new_path, new_current = word_path_roam(new_path, new_current, new_word)
-		c.SetSession("WordPath", new_path)
-		c.SetSession("WordNow", new_current)
+	if ok {
+		//if new word in history, update index only
+		c.SetSession("WordPathIdx", idx)
+
+	} else {
+
+		// Add new into history, append it after last indexed word
+		history = history[:index+1]
+		history = append(history, new_word)
+
+		c.SetSession("WordPath", history)
+		c.SetSession("WordPathIdx", index+1)
 	}
 
-	return new_path, new_current
+	return history
 }
 
 //This func will setup new word's ts property via old one

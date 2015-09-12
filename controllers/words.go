@@ -12,67 +12,6 @@ type WordsController struct {
 	beego.Controller
 }
 
-//POST /words：新建一个
-func (c *WordsController) Post() {
-
-	// router: /words/?:word
-	if c.Ctx.Input.Param(":word") != "" {
-		log.Println("Error:Target must be: /words")
-		c.Abort("409") //"409" : Conflict
-	}
-
-	w := models.Wikiwordstruct{}
-	json.Unmarshal(c.Ctx.Input.RequestBody, &w)
-	//	log.Println("Parse to:", w)
-
-	//update time stamp
-	inheritTimeStamp(&w, nil)
-	//	log.Println("Timestamp:", w)
-
-	if nil != models.WikiM.NewWikiword(&w) {
-		c.Data["json"] = "{\"Word\":\"" + w.Word + "\"}"
-		c.ServeJson()
-	} else {
-		c.Abort("500")
-	}
-
-}
-
-//PUT /words/xxxx：更新某个指定信息（提供该全部信息）
-func (c *WordsController) Put() {
-
-	// router: /words/?:word
-	WordIndicate := c.Ctx.Input.Param(":word")
-	//	log.Println("Update word:", WordIndicate)
-	//	log.Println("Get body:", string(c.Ctx.Input.RequestBody))
-
-	if WordIndicate == "" {
-		log.Println("Error:Target must be: /words/xxxx")
-		c.Abort("409") //"409" : Conflict
-	}
-
-	w := models.Wikiwordstruct{}
-	json.Unmarshal(c.Ctx.Input.RequestBody, &w)
-	//	log.Println("Parse to:", w)
-
-	if WordIndicate != w.Word {
-		log.Printf("Err: router[%s] != w.word[%s]\r\n", WordIndicate, w.Word)
-		c.Abort("409") //"409" : Conflict
-	}
-
-	//update time stamp
-	inheritTimeStamp(&w, models.WikiM.GetWikiwordByWord(WordIndicate))
-	//	log.Println("Timestamp:", w)
-
-	if nil != models.WikiM.SaveWikiword(&w) {
-		c.Data["json"] = "{\"Word\":\"" + w.Word + "\"}"
-		c.ServeJson()
-	} else {
-		c.Abort("500")
-	}
-
-}
-
 func (c *WordsController) Get() {
 	var wordStruct *models.Wikiwordstruct
 	var wordAttrs []models.Wikiwordattr
@@ -138,7 +77,7 @@ func (c *WordsController) Get() {
 
 	c.Data["Website"] = "d1works.com"
 	c.Data["Email"] = "yizuoshe@gmail.com"
-	c.Data["Version"] = "0.1"
+	c.Data["Version"] = beego.AppConfig.String("Version")
 
 	c.Data["isNew"] = isNew
 
@@ -153,6 +92,67 @@ func (c *WordsController) Get() {
 	c.Data["WordAttrs"] = wordAttrs
 	c.Data["BeInvolved"] = beInvolved
 	c.Data["Involved"] = involved
+
+}
+
+//PUT /words/xxxx：更新某个指定信息（提供该全部信息）
+func (c *WordsController) Put() {
+
+	// router: /words/?:word
+	WordIndicate := c.Ctx.Input.Param(":word")
+	//	log.Println("Update word:", WordIndicate)
+	//	log.Println("Get body:", string(c.Ctx.Input.RequestBody))
+
+	if WordIndicate == "" {
+		log.Println("Error:Target must be: /words/xxxx")
+		c.Abort("409") //"409" : Conflict
+	}
+
+	w := models.Wikiwordstruct{}
+	json.Unmarshal(c.Ctx.Input.RequestBody, &w)
+	//	log.Println("Parse to:", w)
+
+	if WordIndicate != w.Word {
+		log.Printf("Err: router[%s] != w.word[%s]\r\n", WordIndicate, w.Word)
+		c.Abort("409") //"409" : Conflict
+	}
+
+	//update time stamp
+	inheritTimeStamp(&w, models.WikiM.GetWikiwordByWord(WordIndicate))
+	//	log.Println("Timestamp:", w)
+
+	if nil != models.WikiM.SaveWikiword(&w) {
+		c.Data["json"] = "{\"Word\":\"" + w.Word + "\"}"
+		c.ServeJson()
+	} else {
+		c.Abort("500")
+	}
+
+}
+
+//POST /words：新建一个
+func (c *WordsController) Post() {
+
+	// router: /words/?:word
+	if c.Ctx.Input.Param(":word") != "" {
+		log.Println("Error:Target must be: /words")
+		c.Abort("409") //"409" : Conflict
+	}
+
+	w := models.Wikiwordstruct{}
+	json.Unmarshal(c.Ctx.Input.RequestBody, &w)
+	//	log.Println("Parse to:", w)
+
+	//update time stamp
+	inheritTimeStamp(&w, nil)
+	//	log.Println("Timestamp:", w)
+
+	if nil != models.WikiM.NewWikiword(&w) {
+		c.Data["json"] = "{\"Word\":\"" + w.Word + "\"}"
+		c.ServeJson()
+	} else {
+		c.Abort("500")
+	}
 
 }
 
@@ -261,7 +261,10 @@ func session_word_path_locate(c *WordsController, new_word string) []string {
 
 	// Init if not defined
 	if nil == c.GetSession("WordPath") {
-		history = []string{beego.AppConfig.String("StartPoint"), new_word} //[root, new]
+		history = []string{beego.AppConfig.String("StartPoint")} //[root, new]
+		if new_word != history[0] {
+			history = append(history, new_word)
+		}
 		c.SetSession("WordPath", history)
 	} else {
 		history = c.GetSession("WordPath").([]string)

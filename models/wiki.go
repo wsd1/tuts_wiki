@@ -59,28 +59,33 @@ func (this *WikiwordModel) NewWikiword(word *Wikiwordstruct) *Wikiwordstruct {
 
 	sql := "INSERT INTO wikiwordcontent(word,content,compression,encryption,created,modified,visited,readonly) "
 	sql += "VALUES (?,?,?,?,?,?,?,?)"
-	res, err := SqlDb.Exec(sql, word.Word, word.Content, word.Compression, word.Encryption, word.Created, word.Modified, word.Visited, word.Readonly)
+	_, err := SqlDb.Exec(sql, word.Word, word.Content, word.Compression, word.Encryption, word.Created, word.Modified, word.Visited, word.Readonly)
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
 
-	_, err_lastInsertId := res.LastInsertId()
-	if err_lastInsertId != nil {
-		log.Println(err_lastInsertId)
-	}
-	rowCnt, err_affected := res.RowsAffected()
-	if err_affected != nil {
-		log.Println(err_affected)
-	}
+	return this.GetWikiwordByWord(word.Word)
 
-	//fmt.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
+}
 
-	if rowCnt > 0 {
-		return this.GetWikiwordByWord(word.Word)
+func (this *WikiwordModel) DeleteWikiword(word string) bool {
+
+	if "" == word {
+		return false
 	}
 
-	return nil
+	//cache delete
+	delete(this.wordsCache, word)
+
+	sql := "DELETE FROM wikiwordcontent WHERE word = ?"
+	_, err := SqlDb.Exec(sql, word)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+
+	return true
 }
 
 func (this *WikiwordModel) SaveWikiword(word *Wikiwordstruct) *Wikiwordstruct {
@@ -93,28 +98,13 @@ func (this *WikiwordModel) SaveWikiword(word *Wikiwordstruct) *Wikiwordstruct {
 
 	//	log.Println("SQL_UPDATE:", word.Word)
 	sql := "UPDATE wikiwordcontent SET content = ?,compression = ?,encryption = ?,created = ? ,modified = ? ,visited = ? ,readonly = ? WHERE word = ?"
-	res, err := SqlDb.Exec(sql, word.Content, word.Compression, word.Encryption, word.Created, word.Modified, word.Visited, word.Readonly, word.Word)
+	_, err := SqlDb.Exec(sql, word.Content, word.Compression, word.Encryption, word.Created, word.Modified, word.Visited, word.Readonly, word.Word)
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
 
-	_, err_lastInsertId := res.LastInsertId()
-	if err_lastInsertId != nil {
-		log.Println(err_lastInsertId)
-	}
-	rowCnt, err_affected := res.RowsAffected()
-	if err_affected != nil {
-		log.Println(err_affected)
-	}
-
-	//fmt.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
-
-	if rowCnt > 0 {
-		return this.GetWikiwordByWord(word.Word)
-	}
-
-	return nil
+	return this.GetWikiwordByWord(word.Word)
 }
 
 // get word struct by word.

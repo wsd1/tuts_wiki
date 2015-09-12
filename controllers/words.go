@@ -100,7 +100,7 @@ func (c *WordsController) Get() {
 	}
 
 	// Word visit history.
-	//wordPath, wordCurrent := session_word_path(c, WordIndicate)
+	//wordPath, wordCurrent := session_word_path_locate(c, WordIndicate)
 	//wordCurrent := WordIndicate
 	//wordPath := []string{}
 
@@ -142,7 +142,7 @@ func (c *WordsController) Get() {
 
 	c.Data["isNew"] = isNew
 
-	c.Data["WordPath"] = session_word_path(c, WordIndicate)
+	c.Data["WordPath"] = session_word_path_locate(c, WordIndicate)
 
 	c.Data["WordCurrent"] = wordStruct.Word
 	c.Data["WordContent"] = wordStruct.Content
@@ -156,6 +156,38 @@ func (c *WordsController) Get() {
 
 }
 
+//DELETE /words/xxxx：更新某个指定信息（提供该全部信息）
+func (c *WordsController) Delete() {
+
+	// router: /words/?:word
+	WordDelete := c.Ctx.Input.Param(":word")
+	//	log.Println("Update word:", WordDelete)
+	//	log.Println("Get body:", string(c.Ctx.Input.RequestBody))
+
+	if WordDelete == "" {
+		log.Println("Error:Target must be: /words/xxxx")
+		c.Abort("409") //"409" : Conflict
+	}
+
+	//Can not delete root word
+	if WordDelete == beego.AppConfig.String("StartPoint") {
+		log.Println("Error:Can not delete root.")
+		c.Abort("500") //"409" : Conflict
+	}
+
+	// Delete from DB
+	if models.WikiM.DeleteWikiword(WordDelete) {
+		// Delete from history, and find proper current word
+		current := session_word_path_delete(c, WordDelete)
+
+		c.Data["json"] = "{\"Word\":\"" + current + "\"}"
+		c.ServeJson()
+	} else {
+		c.Abort("500")
+	}
+
+}
+
 func isInHistory(strs []string, str string) (bool, int) {
 	for i, v := range strs {
 		if v == str {
@@ -165,27 +197,78 @@ func isInHistory(strs []string, str string) (bool, int) {
 	return false, len(strs)
 }
 
+// Input word to be deleted
+// Delete word in history, and return proper current word
+func session_word_path_delete(c *WordsController, del_word string) string {
+
+	var history []string
+	var idx int
+
+	// Init if not defined
+	if nil == c.GetSession("WordPath") {
+		return ""
+	} else {
+		history = c.GetSession("WordPath").([]string)
+	}
+
+	if nil == c.GetSession("WordPathIdx") {
+		idx = 0
+		c.SetSession("WordPathIdx", idx)
+	} else {
+		idx = c.GetSession("WordPathIdx").(int)
+	}
+
+	//Delete nothing
+	if del_word == "" {
+		return history[idx]
+	}
+
+	ok, del_idx := isInHistory(history, del_word)
+
+	if !ok {
+		//Nothing in history to delete
+		return history[idx]
+
+	} else {
+
+		//if word in history, del it ,change index, update path and index
+		history = append(history[:del_idx], history[del_idx+1:]...)
+		if del_idx > 0 {
+			idx = del_idx - 1
+		} else {
+			idx = 0
+		}
+
+		c.SetSession("WordPath", history)
+		c.SetSession("WordPathIdx", idx)
+
+		return history[idx]
+	}
+
+	return ""
+}
+
 // Input suggest word, return paht and current.
 // This func will update session storage also.
-func session_word_path(c *WordsController, new_word string) []string {
+func session_word_path_locate(c *WordsController, new_word string) []string {
 
 	var history []string
 	var index int
 
 	if new_word == "" {
-		return nil
+		return []string{}
 	}
 
 	// Init if not defined
 	if nil == c.GetSession("WordPath") {
-		history = []string{new_word}
+		history = []string{beego.AppConfig.String("StartPoint"), new_word} //[root, new]
 		c.SetSession("WordPath", history)
 	} else {
 		history = c.GetSession("WordPath").([]string)
 	}
 
 	if nil == c.GetSession("WordPathIdx") {
-		index = 0
+		index = len(history) - 1
 		c.SetSession("WordPathIdx", index)
 	} else {
 		index = c.GetSession("WordPathIdx").(int)

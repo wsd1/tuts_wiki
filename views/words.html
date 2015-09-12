@@ -265,6 +265,12 @@
 							action: createRelation,
 							className: "fa fa-share-alt-square",
 							title: "Relation",
+						}, "|",
+						{
+							name: "delete",
+							action: deleteSelf,
+							className: "fa fa-remove",
+							title: "Delete",
 						}
 					]
 
@@ -310,6 +316,12 @@
 		on_change();	//Changes may be loaded from local storage.
 
 		glb_editor.codemirror.on('change', on_change);
+
+		
+		if(!tpl_is_new){
+			glb_editor.togglePreview()
+		}		
+
 
 		function createRelation (editor) {
 			var cm = editor.codemirror;
@@ -363,13 +375,33 @@
 				success: function (data) {
 					$("#changed_sign").hide();
 				}, 
-				error: function (msg) { console.log( msg );} 
+				error: function (msg) { 
+					alert( msg.statusText );
+				} 
 			});
 		}
 
-		if(!tpl_is_new){
-			glb_editor.togglePreview()
-		}		
+
+		function deleteSelf(editor) {
+			if (confirm("Be true to delete!") != true) {
+				return;
+			}
+
+			$.ajax({ 
+				type: "DELETE", 
+				url: "/words/" + tpl_word_current, 
+				dataType: "json", 
+				success: function (data) {
+					eval("var ret = " + data);
+					window.location = "/words/" + ret.Word
+				}, 
+				error: function (msg) { 
+					alert( msg.statusText );
+				} 
+			});
+		}
+
+
 
 	</script>
 
